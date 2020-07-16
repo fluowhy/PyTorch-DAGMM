@@ -43,23 +43,9 @@ class ComputeLoss:
         det_cov = (0.5 * (cte + torch.logdet(cov))).exp()
         cov_diag = 0
 
-        # for k in range(self.n_gmm):
-
-        #     cov_k = cov[k] + (torch.eye(cov[k].size(-1)) * eps).to(self.device)
-        #     cov_inverse.append(torch.inverse(cov_k).unsqueeze(0))
-        #     det_cov.append((0.5 * (cte + torch.logdet(cov_k))).exp().unsqueeze(0))
-            # det_cov.append((Cholesky.apply(cov_k.cpu() * (2*np.pi)).diag().prod()).unsqueeze(0))
-            # cov_diag += torch.sum(1 / cov_k.diag())
-        
-        # cov_inverse = torch.cat(cov_inverse, dim=0)
-        # det_cov = torch.cat(det_cov).to(self.device)
-        # det_cov = torch.clamp(det_cov, min=eps)
-
         E_z = - 0.5 * torch.sum(torch.sum(z_mu.unsqueeze(-1) * cov_inverse.unsqueeze(0), dim=-2) * z_mu, dim=-1)
         E_z = torch.exp(E_z)
-        # E_z = torch.clamp(E_z, min=0., max=1e4)
         E_z = torch.sum(phi.unsqueeze(0) * E_z / (torch.sqrt(det_cov)).unsqueeze(0), dim=1)
-        # E_z = torch.clamp(E_z, max=1)
         E_z = - torch.log(E_z + eps)
         if sample_mean:
             E_z = torch.mean(E_z)
@@ -82,7 +68,6 @@ class ComputeLoss:
 
         z_mu = z.unsqueeze(-1) - mu.unsqueeze(0)
         z_mu_z_mu_t = torch.matmul(z_mu.transpose(0, 2), z_mu.transpose(0, 2).transpose(1, 2)).squeeze(0)
-        # z_mu_z_mu_t = z_mu.unsqueeze(-1) * z_mu.unsqueeze(-2)
         
         #cov = K x D x D
         cov = torch.sum(gamma.unsqueeze(-1).unsqueeze(-1) * z_mu_z_mu_t, dim=0)
