@@ -6,7 +6,7 @@ from sklearn.metrics import precision_recall_fscore_support as prf, accuracy_sco
 
 from forward_step import ComputeLoss
 
-def eval(model, dataloaders, device, n_gmm):
+def evaluate(model, dataloaders, device, n_gmm):
     """Testing the DAGMM model"""
     dataloader_train, dataloader_test = dataloaders
     model.eval()
@@ -18,10 +18,12 @@ def eval(model, dataloaders, device, n_gmm):
         mu_sum = 0
         cov_sum = 0
         # Obtaining the parameters gamma, mu and cov using the trainin (clean) data.
-        for x, _ in dataloader_train:
+        for x, y, m, s in dataloader_train:
             x = x.float().to(device)
+            m = m.float().to(device)
+            s = s.float().to(device)
 
-            _, _, z, gamma = model(x)
+            _, _, z, gamma = model(x, m, s)
             phi_batch, mu_batch, cov_batch = compute.compute_params(z, gamma)
 
             batch_gamma_sum = torch.sum(gamma, dim=0)
@@ -38,10 +40,12 @@ def eval(model, dataloaders, device, n_gmm):
         # Obtaining Labels and energy scores for train data
         energy_train = []
         labels_train = []
-        for x, y in dataloader_train:
+        for x, y, m, s in dataloader_train:
             x = x.float().to(device)
+            m = m.float().to(device)
+            s = s.float().to(device)
 
-            _, _, z, gamma = model(x)
+            _, _, z, gamma = model(x, m, s)
             sample_energy, cov_diag  = compute.compute_energy(z, gamma, phi=train_phi,
                                                               mu=train_mu, cov=train_cov, 
                                                               sample_mean=False)
@@ -54,10 +58,12 @@ def eval(model, dataloaders, device, n_gmm):
         # Obtaining Labels and energy scores for test data
         energy_test = []
         labels_test = []
-        for x, y in dataloader_test:
+        for x, y, m, s in dataloader_test:
             x = x.float().to(device)
+            m = m.float().to(device)
+            s = s.float().to(device)
 
-            _, _, z, gamma = model(x)
+            _, _, z, gamma = model(x, m, s)
             sample_energy, cov_diag  = compute.compute_energy(z, gamma, train_phi,
                                                               train_mu, train_cov,
                                                               sample_mean=False)

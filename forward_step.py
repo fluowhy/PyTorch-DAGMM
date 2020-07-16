@@ -5,6 +5,13 @@ from torch.autograd import Variable
 import numpy as np
 
 
+def recon_loss(x, x_hat, eps=1e-10):
+    seq_len = (x[:, :, 0] != 0).sum(-1).float() + 1
+    mask = (x[:, :, 0] != 0).type(torch.float)  # .to(self.device)
+    mse = ((((x_hat - x[:, :, 1]) / (x[:, :, 2] + eps)).pow(2) * mask).sum(- 1) / seq_len).mean()
+    return mse
+
+
 class ComputeLoss:
     def __init__(self, model, lambda_energy, lambda_cov, device, n_gmm):
         self.model = model
@@ -15,7 +22,7 @@ class ComputeLoss:
     
     def forward(self, x, x_hat, z, gamma):
         """Computing the loss function for DAGMM."""
-        reconst_loss = torch.mean((x-x_hat).pow(2))
+        reconst_loss = recon_loss(x, x_hat)
 
         sample_energy, cov_diag = self.compute_energy(z, gamma)
 
@@ -76,7 +83,7 @@ class ComputeLoss:
 
 class Cholesky(torch.autograd.Function):
     def forward(ctx, a):
-        l = torch.potrf(a, False)
+        l = torch.cholesky(a, False)
         ctx.save_for_backward(l)
         return l
     def backward(ctx, grad_output):
