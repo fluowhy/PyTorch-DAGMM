@@ -49,10 +49,10 @@ class ComputeLoss:
         cov_inverse = torch.cat(cov_inverse, dim=0)
         det_cov = torch.cat(det_cov).to(self.device)
 
-        E_z = - 0.5 * torch.sum(torch.sum(z_mu.unsqueeze(-1) * cov_inverse.unsqueeze(0), dim=-2) * z_mu, dim=-1)
+        E_z = -0.5 * torch.sum(torch.sum(z_mu.unsqueeze(-1) * cov_inverse.unsqueeze(0), dim=-2) * z_mu, dim=-1)
         E_z = torch.exp(E_z)
-        E_z = torch.clamp(E_z, min=0., max=1e3)
-        E_z = - torch.log(torch.sum(phi.unsqueeze(0) * E_z / (torch.sqrt(det_cov)).unsqueeze(0), dim=1) + eps)
+        E_z = torch.clamp(E_z, min=0., max=1e4)
+        E_z = -torch.log(torch.sum(phi.unsqueeze(0)*E_z / (torch.sqrt(det_cov)).unsqueeze(0), dim=1) + eps)
 
         if sample_mean:
             E_z = torch.mean(E_z)

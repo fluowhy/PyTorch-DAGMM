@@ -27,8 +27,8 @@ class TrainerDAGMM:
             self.args.nout,
             self.args.nlayers,
             self.args.do,
-   
-            self.args.latent_dim,         self.args.n_gmm,
+            self.args.n_gmm,
+            self.args.latent_dim,
             self.args.folded
             ).to(self.device)
         self.model.apply(weights_init_normal)

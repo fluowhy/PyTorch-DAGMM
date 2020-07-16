@@ -16,16 +16,16 @@ if __name__ == '__main__':
                         help="number of epochs")
     parser.add_argument("--patience", type=int, default=50, 
                         help="Patience for Early Stopping")
-    parser.add_argument('--lr', type=float, default=1e-4,
+    parser.add_argument('--lr', type=float, default=2e-4,
                         help='learning rate')
     parser.add_argument('--lr_milestones', type=list, default=[50],
                         help='Milestones at which the scheduler multiply the lr by 0.1')
-    parser.add_argument("--batch_size", type=int, default=1024, 
+    parser.add_argument("--batch_size", type=int, default=2048, 
                         help="Batch size")
     parser.add_argument('--latent_dim', type=int, default=1,
                         help='Dimension of the latent variable z')
     parser.add_argument('--n_gmm', type=int, default=4,
-                        help='Number of Gaussian components ')
+                        help='Number of Gaussian components.')
     parser.add_argument('--lambda_gmm', type=float, default=1e-3,
                         help='Parameter lambda gmm in loss function.')
     parser.add_argument('--nin', type=int, default=2,
