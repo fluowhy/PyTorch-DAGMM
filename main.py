@@ -69,10 +69,9 @@ if __name__ == '__main__':
     in_ = pd.DataFrame(scores_in, columns=['Inlier'])
     out_ = pd.DataFrame(scores_out, columns=['Outlier'])
 
-
     fig, ax = plt.subplots()
     in_.plot.kde(ax=ax, legend=True, title='Outliers vs Inliers (Deep SVDD)')
     out_.plot.kde(ax=ax, legend=True)
     ax.grid(axis='x')
     ax.grid(axis='y')
-    plt.show()
+    plt.savefig("scores.png", dpi=200)
