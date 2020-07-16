@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     #parsing arguments.
     args = parser.parse_args()
+    print(args)
 
     seed_everything()
 
