@@ -77,13 +77,10 @@ class ToyDataset:
 
 
 class ASASSN:
-    def __init__(self, data_dir, mode, folded, eps=1e-10):
+    def __init__(self, data_dir, mode, eps=1e-10):
         """Loading the data for train and test."""
-        if folded:
-            self.x = np.load("{}/pf_{}.npy".format(data_dir, mode))
-        else:
-            self.x = np.load("{}/x_{}.npy".format(data_dir, mode))
-        y = np.load("{}/y_{}.npy".format(data_dir, mode))
+        self.x = np.load("{}/x_{}.npy".format(data_dir, mode))
+        self.y = np.load("{}/y_{}.npy".format(data_dir, mode))
 
         # standard normalization
         mean = self.x[:, :, 1].mean(axis=1)[:, np.newaxis]
@@ -95,11 +92,6 @@ class ASASSN:
         self.x[:, :, 0] = self.x[:, :, 0] - self.x[:, 0, 0][:, np.newaxis]
         self.x[:, 1:, 0] = self.x[:, 1:, 0] - self.x[:, :-1, 0]
 
-        # rename inlier/outlier labels
-        self.y = np.zeros(len(y))            
-        if mode == "test":
-            outlier_mask = (y == 8)
-            self.y[outlier_mask] = 1
         self.m = mean.astype(np.float32)
         self.s = std.astype(np.float32)
 
@@ -112,6 +104,38 @@ class ASASSN:
         return self.x[index], self.y[index], self.m[index], self.s[index]
 
 
+class FoldedASASSN:
+    def __init__(self, data_dir, mode, eps=1e-10):
+        """Loading the data for train and test."""
+        self.x = np.load("{}/pf_{}.npy".format(data_dir, mode))
+        self.y = np.load("{}/y_{}.npy".format(data_dir, mode))
+        phase = np.load("{}/p_{}.npy".format(data_dir, mode))
+
+        # standard normalization
+        mean = self.x[:, :, 1].mean(axis=1)[:, np.newaxis]
+        std = self.x[:, :, 1].std(axis=1)[:, np.newaxis]
+        self.x[:, :, 1] = (self.x[:, :, 1] - mean) / (std + eps)
+        self.x[:, :, 2] = self.x[:, :, 2] / (std + eps)
+
+        # time normalization
+        self.x[:, :, 0] = self.x[:, :, 0] - self.x[:, 0, 0][:, np.newaxis]
+        self.x[:, 1:, 0] = self.x[:, 1:, 0] - self.x[:, :-1, 0]
+
+        self.m = mean.astype(np.float32)
+        self.s = std.astype(np.float32)
+
+        # phase processing
+        self.p = np.log10(phase)[:, np.newaxis]
+
+    def __len__(self):
+        """Number of images in the object dataset."""
+        return self.x.shape[0]
+
+    def __getitem__(self, index):
+        """Return a sample from the dataset."""
+        return self.x[index], self.y[index], self.m[index], self.s[index], self.p[index]
+
+
 
 def get_KDDCup99(args, data_dir='./data/kdd_cup.npz'):
     """Returning train and test dataloaders."""
@@ -122,7 +146,6 @@ def get_KDDCup99(args, data_dir='./data/kdd_cup.npz'):
     test = KDDCupData(data_dir, 'test')
     dataloader_test = DataLoader(test, batch_size=args.batch_size, 
                               shuffle=False, num_workers=0)
-    pdb.set_trace()
     return dataloader_train, dataloader_test
 
 
@@ -138,13 +161,27 @@ def get_synthetic_time_series(args, data_dir="../datasets/toy"):
 
 
 def get_asas_sn(args, data_dir="../datasets/asas_sn", folded=False):
-    train = ASASSN(data_dir, "train", folded)
-    dataloader_train = DataLoader(train, batch_size=args.batch_size, 
-                              shuffle=True, num_workers=0)
-    
-    test = ASASSN(data_dir, "test", folded)
-    dataloader_test = DataLoader(test, batch_size=args.batch_size, 
-                              shuffle=False, num_workers=0)
+    if folded:
+        train = FoldedASASSN(data_dir, "train")
+        test = FoldedASASSN(data_dir, "test")
+    else:
+        train = ASASSN(data_dir, "train")
+        test = ASASSN(data_dir, "test")
+
+    dataloader_train = DataLoader(
+        train,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=0
+        )
+
+    dataloader_test = DataLoader(
+        test,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=0
+        )
+
     return dataloader_train, dataloader_test
 
 

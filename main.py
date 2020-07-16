@@ -26,11 +26,8 @@ if __name__ == '__main__':
                         help='Dimension of the latent variable z')
     parser.add_argument('--n_gmm', type=int, default=4,
                         help='Number of Gaussian components ')
-    parser.add_argument('--lambda_energy', type=float, default=0.1,
-                        help='Parameter labda1 for the relative importance of sampling energy.')
-    parser.add_argument('--lambda_cov', type=int, default=0.005,
-                        help='Parameter lambda2 for penalizing small values on'
-                             'the diagonal of the covariance matrix')
+    parser.add_argument('--lambda_gmm', type=float, default=1e-3,
+                        help='Parameter lambda gmm in loss function.')
     parser.add_argument('--nin', type=int, default=2,
                         help='Input dimension.')
     parser.add_argument('--nout', type=int, default=1,
@@ -41,6 +38,7 @@ if __name__ == '__main__':
                         help='Number of hidden layers.')
     parser.add_argument('--do', type=float, default=0.5,
                         help='Dropout.')
+    parser.add_argument('--folded', action="store_true", help="Folded time series.")
 
     #parsing arguments.
     args = parser.parse_args()
@@ -51,13 +49,13 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Get train and test dataloaders.
-    data = get_asas_sn(args, folded=True)
+    data = get_asas_sn(args, folded=args.folded)
 
     DAGMM = TrainerDAGMM(args, data, device)
     DAGMM.train()
     # DAGMM.eval(DAGMM.model, data[1], device) # data[1]: test dataloader
 
-    labels, scores = evaluate(DAGMM.model, data, device, args.n_gmm)
+    labels, scores = evaluate(DAGMM.model, data, device, args)
 
     import matplotlib.pyplot as plt
     import pandas as pd 
@@ -70,7 +68,7 @@ if __name__ == '__main__':
     out_ = pd.DataFrame(scores_out, columns=['Outlier'])
 
     fig, ax = plt.subplots()
-    in_.plot.kde(ax=ax, legend=True, title='Outliers vs Inliers (Deep SVDD)')
+    in_.plot.kde(ax=ax, legend=True, title='Outliers vs Inliers DAGMMTS')
     out_.plot.kde(ax=ax, legend=True)
     ax.grid(axis='x')
     ax.grid(axis='y')

@@ -55,7 +55,7 @@ class DAGMM(nn.Module):
 
 
 class DAGMMTS(nn.Module):
-    def __init__(self, nin, nh, nout, nlayers, do, n_gmm=2, z_dim=1):
+    def __init__(self, nin, nh, nout, nlayers, do, n_gmm=2, z_dim=1, folded=False):
         """Network for DAGMMTS (KDDCup99)"""
         super(DAGMMTS, self).__init__()
         self.nh = nh
@@ -71,7 +71,7 @@ class DAGMMTS(nn.Module):
         self.do = torch.nn.Dropout(p=do)
 
         #Estimation network
-        self.fc9 = nn.Linear(z_dim + 4, 16)
+        self.fc9 = nn.Linear(z_dim + 5, 16) if folded else nn.Linear(z_dim + 4, 16)
         self.fc10 = nn.Linear(16, n_gmm)
 
     def encode(self, x):
@@ -105,13 +105,16 @@ class DAGMMTS(nn.Module):
         cosine_similarity = F.cosine_similarity(x[:, :, 1], x_hat, dim=1)
         return relative_euclidean_distance, cosine_similarity
     
-    def forward(self, x, m, s):
+    def forward(self, x, m, s, p=None):
         seq_len = (x[:, :, 0] != 0).sum(-1)
         n, _, _ = x.shape
         z_c = self.encode(x)
         z_c = z_c[torch.arange(n), (seq_len - 1).type(dtype=torch.long)]
         x_hat = self.decode(x[:, :, 0], z_c)
         rec_1, rec_2 = self.compute_reconstruction(x, x_hat, seq_len)
-        z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s], dim=1)
+        if p:
+            z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s, p], dim=1)
+        else:
+            z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s], dim=1)
         gamma = self.estimate(z)
         return z_c, x_hat, z, gamma
