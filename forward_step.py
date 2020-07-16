@@ -27,7 +27,7 @@ class ComputeLoss:
         sample_energy, _ = self.compute_energy(z, gamma)
         cross_entropy = self.cross_entropy(gamma, y)
         loss = reconst_loss + self.lambda_gmm * sample_energy + cross_entropy
-        return Variable(loss, requires_grad=True)
+        return Variable(loss, requires_grad=True), reconst_loss, sample_energy, cross_entropy
     
     def compute_energy(self, z, gamma, phi=None, mu=None, cov=None, sample_mean=True):
         """Computing the sample energy function"""
@@ -52,7 +52,7 @@ class ComputeLoss:
         E_z = -0.5 * torch.sum(torch.sum(z_mu.unsqueeze(-1) * cov_inverse.unsqueeze(0), dim=-2) * z_mu, dim=-1)
         E_z = torch.exp(E_z)
         E_z = torch.clamp(E_z, min=0., max=1e3)
-        E_z = -torch.log(torch.sum(phi.unsqueeze(0)*E_z / (torch.sqrt(det_cov)).unsqueeze(0), dim=1) + eps)
+        E_z = -torch.log(torch.sum(phi.unsqueeze(0) * E_z / (torch.sqrt(det_cov)).unsqueeze(0), dim=1) + eps)
 
         if sample_mean:
             E_z = torch.mean(E_z)
