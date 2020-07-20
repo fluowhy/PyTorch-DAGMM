@@ -113,8 +113,8 @@ class DAGMMTS(nn.Module):
         x_hat = self.decode(x[:, :, 0], z_c)
         rec_1, rec_2 = self.compute_reconstruction(x, x_hat, seq_len)
         if p is None:
-            z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s], dim=1)
+           z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s], dim=1)
         else:
-            z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s, p], dim=1)
+           z = torch.cat([z_c, rec_1.unsqueeze(-1), rec_2.unsqueeze(-1), m, s, p], dim=1)
         gamma = self.estimate(z)
         return z_c, x_hat, z, gamma

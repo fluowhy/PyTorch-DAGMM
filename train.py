@@ -8,6 +8,7 @@ from barbar import Bar
 import pdb
 import os
 import shutil
+import matplotlib.pyplot as plt
 
 from model import DAGMMTS
 from forward_step import ComputeLoss
@@ -69,10 +70,10 @@ class TrainerDAGMM:
                 gmm_loss += sample_energy.item()
                 ce_loss += cross_entropy.item()
 
-            total_loss = total_loss / len(self.train_loader)
-            recon_loss = recon_loss / len(self.train_loader)
-            gmm_loss = gmm_loss / len(self.train_loader)
-            ce_loss = ce_loss / len(self.train_loader)
+            total_loss /= len(self.train_loader)
+            recon_loss /= len(self.train_loader)
+            gmm_loss /= len(self.train_loader)
+            ce_loss /= len(self.train_loader)
 
             total_loss_val = 0
             recon_loss_val = 0
