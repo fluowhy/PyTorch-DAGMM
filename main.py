@@ -23,17 +23,17 @@ if __name__ == '__main__':
                         help='Milestones at which the scheduler multiply the lr by 0.1')
     parser.add_argument("--batch_size", type=int, default=2048, 
                         help="Batch size")
-    parser.add_argument('--latent_dim', type=int, default=1,
+    parser.add_argument('--latent_dim', type=int, default=16,
                         help='Dimension of the latent variable z')
-    parser.add_argument('--n_gmm', type=int, default=4,
+    parser.add_argument('--n_gmm', type=int, default=8,
                         help='Number of Gaussian components.')
     parser.add_argument('--lambda_gmm', type=float, default=1e-3,
                         help='Parameter lambda gmm in loss function.')
-    parser.add_argument('--nin', type=int, default=2,
+    parser.add_argument('--nin', type=int, default=3,
                         help='Input dimension.')
     parser.add_argument('--nout', type=int, default=1,
                         help='Output dimension.')
-    parser.add_argument('--nh', type=int, default=1,
+    parser.add_argument('--nh', type=int, default=96,
                         help='Hidden size.')
     parser.add_argument('--nlayers', type=int, default=2,
                         help='Number of hidden layers.')
