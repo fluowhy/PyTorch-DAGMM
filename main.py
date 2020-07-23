@@ -3,6 +3,7 @@
 import numpy as np
 import argparse 
 import torch
+import pdb
 
 from train import TrainerDAGMM
 from test import evaluate
@@ -56,21 +57,4 @@ if __name__ == '__main__':
     DAGMM.train()
     # DAGMM.eval(DAGMM.model, data[1], device) # data[1]: test dataloader
 
-    labels, scores = evaluate(DAGMM.model, data, device, args)
-
-    import matplotlib.pyplot as plt
-    import pandas as pd 
-
-    scores_in = scores[np.where(labels==0)[0]]
-    scores_out = scores[np.where(labels==1)[0]]
-
-
-    in_ = pd.DataFrame(scores_in, columns=['Inlier'])
-    out_ = pd.DataFrame(scores_out, columns=['Outlier'])
-
-    fig, ax = plt.subplots()
-    in_.plot.kde(ax=ax, legend=True, title='Outliers vs Inliers DAGMMTS')
-    out_.plot.kde(ax=ax, legend=True)
-    ax.grid(axis='x')
-    ax.grid(axis='y')
-    plt.savefig("scores.png", dpi=200)
+    labels, scores_test, scores_train = evaluate(DAGMM.model, data, device, args)
